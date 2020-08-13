@@ -25,3 +25,5 @@ Imports:
     stats,
     dplyr,
     jasmines
+URL: https://github.com/djnavarro/turmite59
+BugReports: https://github.com/djnavarro/turmite59/issues
