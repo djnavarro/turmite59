@@ -39,7 +39,9 @@ cpp11::writable::integers_matrix run_turmite(int width, int height, int iter, in
   for(int t = 0; t < iter; t++) {
 
     color = cols(pos[0], pos[1]);
-    u = unif_rand();
+    // not sure if cpp11 has an equivalent to R::runif()
+    do {u = unif_rand();} while (u <= 0 || u >= 1);
+
     if(u < .01) {
       color = 1 - color;
     }
