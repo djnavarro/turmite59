@@ -2,4 +2,5 @@
 
 export(turmite59)
 importFrom(Rcpp,sourceCpp)
+importFrom(dplyr,"%>%")
 useDynLib(turmite59)
