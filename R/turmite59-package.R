@@ -2,7 +2,7 @@
 #' @useDynLib turmite59
 NULL
 
-#' @importFrom dplyr %>%
+#' @importFrom magrittr %>%
 NULL
 
 utils::globalVariables(

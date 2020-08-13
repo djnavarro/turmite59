@@ -23,7 +23,8 @@ Imports:
     stats,
     dplyr,
     jasmines,
-    utils
+    utils, 
+    magrittr
 Remotes:
     djnavarro/jasmines
 URL: https://github.com/djnavarro/turmite59
