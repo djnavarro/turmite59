@@ -1,5 +1,5 @@
-#include <Rcpp.h>
-using namespace Rcpp;
+#include <cpp11.hpp>
+#include <R.h>
 
 namespace trmt {
 
@@ -11,8 +11,7 @@ int wrap(int pos, int sz) {
 }
 
 // move the turmite in the direction it is facing
-IntegerVector step(IntegerVector position, int facing, int width, int height) {
-
+void step(cpp11::writable::integers& position, int facing, int width, int height) {
   // move
   if(facing == 0) position[1]++;
   if(facing == 1) position[0]++;
@@ -21,28 +20,26 @@ IntegerVector step(IntegerVector position, int facing, int width, int height) {
 
   position[0] = trmt::wrap(position[0], width);
   position[1] = trmt::wrap(position[1], height);
-
-  return position;
 }
 
 
 // turmite function
-IntegerMatrix run_turmite(int width, int height, int iter, int step_size) {
+cpp11::writable::integers_matrix run_turmite(int width, int height, int iter, int step_size) {
 
-  IntegerVector pos = {width/2, height/2};
+  cpp11::writable::integers pos = {width/2, height/2};
   int old_state = 0;
   int new_state = 0;
   int facing = 0;
   int color;
   double u;
 
-  IntegerMatrix grid(width, height); // initially zero
-  IntegerMatrix cols(width, height); // initially zero
+  cpp11::writable::integers_matrix grid(width, height); // initially zero
+  cpp11::writable::integers_matrix cols(width, height); // initially zero
 
   for(int t = 0; t < iter; t++) {
 
     color = cols(pos[0], pos[1]);
-    u = R::runif(0, 1);
+    u = unif_rand();
     if(u < .01) {
       color = 1 - color;
     }
@@ -52,7 +49,7 @@ IntegerMatrix run_turmite(int width, int height, int iter, int step_size) {
       for(int s = 0; s < step_size; s++) {
         grid(pos[0], pos[1]) = t;
         cols(pos[0], pos[1]) = 1;
-        pos = trmt::step(pos, facing, width, height); // move forward
+        trmt::step(pos, facing, width, height); // move forward
       }
       new_state = 0;                         // stay in state 0
     }
@@ -61,7 +58,7 @@ IntegerMatrix run_turmite(int width, int height, int iter, int step_size) {
       for(int s = 0; s < step_size; s++) {
         grid(pos[0], pos[1]) = t;
         cols(pos[0], pos[1]) = 0;
-        pos = trmt::step(pos, facing, width, height); // move forward
+        trmt::step(pos, facing, width, height); // move forward
       }
       new_state = 0;                         // swap to state 0
     }
@@ -71,7 +68,7 @@ IntegerMatrix run_turmite(int width, int height, int iter, int step_size) {
       for(int s = 0; s < step_size; s++) {
         grid(pos[0], pos[1]) = t;
         cols(pos[0], pos[1]) = 1;
-        pos = trmt::step(pos, facing, width, height); // move forward
+        trmt::step(pos, facing, width, height); // move forward
       }
       new_state = 1;                         // swap to state 1
     }
@@ -80,7 +77,7 @@ IntegerMatrix run_turmite(int width, int height, int iter, int step_size) {
       for(int s = 0; s < step_size; s++) {
         grid(pos[0], pos[1]) = t;
         cols(pos[0], pos[1]) = 0;
-        pos = trmt::step(pos, facing, width, height); // move forward
+        trmt::step(pos, facing, width, height); // move forward
       }
       new_state = 1;                         // stay in state 1
     }
@@ -95,10 +92,9 @@ IntegerMatrix run_turmite(int width, int height, int iter, int step_size) {
 
 
 // turmite function to be called from R
-// [[Rcpp::export]]
-IntegerMatrix turmite(int width, int height, int iter, int step_size) {
-  IntegerMatrix grid = trmt::run_turmite(width, height, iter, step_size);
-  return grid;
+[[cpp11::register]]
+cpp11::writable::integers_matrix turmite(int width, int height, int iter, int step_size) {
+  return trmt::run_turmite(width, height, iter, step_size);
 }
 
 
