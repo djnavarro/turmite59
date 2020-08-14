@@ -14,9 +14,8 @@ LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.0
 LinkingTo: 
-    Rcpp
+    cpp11
 Imports: 
-    Rcpp,
     grDevices,
     paletteer,
     ggplot2,
@@ -24,7 +23,8 @@ Imports:
     stats,
     dplyr,
     jasmines,
-    utils
+    utils, 
+    magrittr
 Remotes:
     djnavarro/jasmines
 URL: https://github.com/djnavarro/turmite59

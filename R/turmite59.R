@@ -104,7 +104,7 @@ make_hearts <- function(param) {
 
   dat <- jasmines::use_seed(param$seed) %>%
     jasmines::entity_heart(grain = 1000, size = param$heart_size) %>%
-    dplyr::mutate(ind = 1:dplyr::n()) %>%
+    dplyr::mutate(ind = dplyr::row_number()) %>%
     jasmines::unfold_slice(
       iterations = param$n_slices,
       scale = .5 * 10^-24,
