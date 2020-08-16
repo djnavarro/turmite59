@@ -1,14 +1,119 @@
 
 #' Makes a heartbleed image
 #'
-#' @param shade hex code
-#' @param file filename
+#' @param shade Hex code specifying a base colour
+#' @param file File to save the image
+#' @param image_x Image width in inches
+#' @param image_y Image height in inches
+#' @param image_dpi Image resolution in dpi
+#' @param palette_n Number of distinct colours
+#' @param palette_heart Palette for the heart
+#' @param palette_turmite Palette for the turmite
+#' @param alpha_turmite Transparency for the turmite
+#' @param alpha_heart Transparency function for the heart
+#' @param heart_shift_x Horizontal offset for the heart
+#' @param heart_shift_y Vertical offset for the heart
+#' @param heart_grain Number of distinct points along the heart
+#' @param heart_size Size of the heart
+#' @param heart_jitter Noise in the heart
+#' @param slice_scale Scale of the slice step
+#' @param slice_n Number of slices in the slice step
+#' @param unfold_iter Number of iterations for the breeze step
+#' @param unfold_scale Scale of the breeze step
+#' @param unfold_drift Drift rate for the breeze step
+#' @param unfold_fractal Fractal to use for the breeze step
+#' @param unfold_octaves Number of octacves
+#' @param turmite_grid_x Horizontal size of the turmite grid in pixels
+#' @param turmite_grid_y Vertical size of the turmite grid in pixels
+#' @param turmite_steps Number of steps to run the turmite
+#' @param turmite_stepsize Distance the turmite walks on each step
 #'
 #' @export
-turmite59 <- function(shade, file = NULL) {
+turmite59 <- function(
+  shade,
+  file = NULL,
+  image_x = NULL,
+  image_y = NULL,
+  image_dpi = NULL,
+  palette_n = NULL,
+  palette_heart = NULL,
+  palette_turmite = NULL,
+  alpha_turmite = NULL,
+  alpha_heart = NULL,
+  heart_shift_x = NULL,
+  heart_shift_y = NULL,
+  heart_grain = NULL,
+  heart_size = NULL,
+  heart_jitter = NULL,
+  slice_scale = NULL,
+  slice_n = NULL,
+  unfold_iter = NULL,
+  unfold_scale = NULL,
+  unfold_drift = NULL,
+  unfold_fractal = NULL,
+  unfold_octaves = NULL,
+  turmite_grid_x = NULL,
+  turmite_grid_y = NULL,
+  turmite_steps = NULL,
+  turmite_stepsize = NULL
+) {
 
-  cat("setting up...\n")
-  param <- make_settings(shade)
+  # control RNG seed
+  seed <- sum(grDevices::col2rgb(shade)) + 1
+  set.seed(seed)
+
+  # constants
+  param <- list(
+    seed = seed,
+
+    # colours
+    palette_n          = palette_n %||% 1000,
+    palette_turmite    = NA,
+    palette_heart      = NA,
+    palette_background = shade,
+
+    # transparency
+    alpha_turmite = alpha_turmite %||% 0.5,
+    alpha_heart   = alpha_heart   %||% function(x) exp(-(x-1)/20),
+
+    # image size
+    image_x = image_x %||% 16,
+    image_y = image_y %||% 16,
+    image_dpi = image_dpi %||% 100,
+
+    # base heart
+    heart_shift_x = heart_shift_x %||% .3,
+    heart_shift_y = heart_shift_y %||% .4,
+    heart_grain   = heart_grain   %||% 1000,
+    heart_size    = heart_size    %||% stats::runif(1, min = .2, max = .5),
+    heart_jitter  = heart_jitter  %||% 1/500,
+
+    # heart slice operation
+    slice_scale = slice_scale %||% .5 * 10^-24,
+    slice_n     = slice_n     %||% sample(6:12, 1),
+
+    # heart unfold operation
+    unfold_iter    = unfold_iter    %||% 100,
+    unfold_scale   = unfold_scale   %||% .0002,
+    unfold_drift   = unfold_drift   %||% .0005,
+    unfold_fractal = unfold_fractal %||% ambient::ridged,
+    unfold_octaves = unfold_octaves %||% 8,
+
+    # parameters describing the turmite background
+    turmite_grid_x   = turmite_grid_x   %||% 2000,
+    turmite_grid_y   = turmite_grid_y   %||% 2000,
+    turmite_steps    = turmite_steps    %||% 10000000,
+    turmite_stepsize = turmite_stepsize %||% 3
+  )
+
+  # generate the palettes
+  param$palette_turmite <- palette_turmite %||% sample_palette(param$palette_n + 1)
+  param$palette_heart   <- palette_heart   %||% grDevices::adjustcolor(
+    col = param$palette_turmite,
+    offset = c(0.5, 0.5, 0.5, 0),
+    transform = diag(c(.7, .7, .7, 1))
+  )
+
 
   cat("turmite wandering...\n")
   raster <- make_background(param)
@@ -20,14 +125,17 @@ turmite59 <- function(shade, file = NULL) {
   ggplot2::ggsave(
     filename = make_filename(file, shade),
     plot = make_ggplot(param, raster, dat),
-    width = param$pixels_wide / 300,
-    height = param$pixels_high / 300,
-    dpi = 300
+    width = param$image_x,
+    height = param$image_y,
+    dpi = param$image_dpi
   )
 }
 
-
-# settings ----------------------------------------------------------------
+`%||%` <- function (x, y) {
+  if (is.null(x))
+    y
+  else x
+}
 
 sample_palette <- function(n) {
   pal <- paletteer::palettes_c_names
@@ -36,63 +144,26 @@ sample_palette <- function(n) {
   return(paletteer::paletteer_c(pnm, n))
 }
 
-make_settings <- function(shade) {
-
-  # control RNG seed
-  seed <- sum(grDevices::col2rgb(shade)) + 1
-  set.seed(seed)
-
-  # constants
-  param <- list(
-    seed = seed,
-    ncols = 1000,
-    alpha_base = .5,
-    fill_base = shade,
-    shift = c(.3, .4),
-    grains_high = 2500,
-    grains_wide = 2500,
-    nsteps = 10000000,
-    ss = 3
-  )
-
-  # derived values
-  param$pixels_high = param$grains_high * 2
-  param$pixels_wide = param$grains_wide * 2
-
-
-  # variables
-  param$heart_size <- stats::runif(1, min = .2, max = .5)
-  param$n_slices <- sample(6:12, 1)
-  param$palette_base <- sample_palette(param$ncols + 1)
-  param$palette_heart <- grDevices::adjustcolor(
-    col = param$palette_base,
-    offset = c(0.5, 0.5, 0.5, 0),
-    transform = diag(c(.7, .7, .7, 1))
-  )
-
-  return(param)
-}
-
 
 # turmite background ------------------------------------------------------
 
 make_background <- function(param) {
 
-  ar <- param$grains_high / param$grains_wide
+  ar <- param$turmite_grid_y / param$turmite_grid_x
   raster <- ambient::long_grid(
-    x = seq(0, 1,  length.out = param$grains_wide),
-    y = seq(0, ar, length.out = param$grains_high)
+    x = seq(0, 1,  length.out = param$turmite_grid_x),
+    y = seq(0, ar, length.out = param$turmite_grid_y)
   )
 
   grid <- turmite(
-    width = param$grains_wide,
-    height = param$grains_high,
-    iter = param$nsteps,
-    step_size = param$ss
+    width = param$turmite_grid_x,
+    height = param$turmite_grid_y,
+    iter = param$turmite_steps,
+    step_size = param$turmite_stepsize
   )
   grid <- t(grid)
-  inds <- 1 + ceiling(param$ncols * grid/param$nsteps)
-  raster$shade <- param$palette_base[inds]
+  inds <- 1 + ceiling(param$palette_n * grid/param$turmite_steps)
+  raster$shade <- param$palette_turmite[inds]
 
   return(raster)
 }
@@ -103,33 +174,36 @@ make_background <- function(param) {
 make_hearts <- function(param) {
 
   dat <- jasmines::use_seed(param$seed) %>%
-    jasmines::entity_heart(grain = 1000, size = param$heart_size) %>%
+    jasmines::entity_heart(
+      grain = param$heart_grain,
+      size = param$heart_size
+    ) %>%
     dplyr::mutate(ind = dplyr::row_number()) %>%
     jasmines::unfold_slice(
-      iterations = param$n_slices,
-      scale = .5 * 10^-24,
+      iterations = param$slice_n,
+      scale = param$slice_scale,
       scatter = TRUE,
       output1 = "id"
     ) %>%
     dplyr::mutate(
-      x = x + stats::rnorm(dplyr::n())/500,
-      y = y + stats::rnorm(dplyr::n())/500
+      x = x + stats::rnorm(dplyr::n()) * param$heart_jitter,
+      y = y + stats::rnorm(dplyr::n()) * param$heart_jitter
     ) %>%
     jasmines::unfold_breeze(
-      iterations = 100,
-      scale = .0002,
-      drift = .0005,
-      fractal = ambient::ridged,
-      octaves = 8
+      iterations = param$unfold_iter,
+      scale = param$unfold_scale,
+      drift = param$unfold_drift,
+      fractal = param$unfold_fractal,
+      octaves = param$unfold_octaves
     ) %>%
     jasmines::unfold_inside() %>%
     dplyr::mutate(val = 1 + (inside>0)*ind)
 
-  dat$val <- ambient::normalise(x = dat$val, to = c(1, param$ncols+1))
+  dat$val <- ambient::normalise(x = dat$val, to = c(1, param$palette_n+1))
   dat$val <- round(dat$val)
   dat$shade <- param$palette_heart[dat$val]
-  dat$x <- (dat$x + param$shift[1])
-  dat$y <- (dat$y + param$shift[2])
+  dat$x <- (dat$x + param$heart_shift_x)
+  dat$y <- (dat$y + param$heart_shift_y)
 
   return(dat)
 }
@@ -153,7 +227,7 @@ make_ggplot <- function(param, raster, dat) {
   ) +
 
     # the raster object forms the background
-    ggplot2::geom_raster(alpha = param$alpha_base) +
+    ggplot2::geom_raster(alpha = param$alpha_turmite) +
 
     # the heart is made of dust/points
     ggplot2::geom_point(
@@ -162,7 +236,7 @@ make_ggplot <- function(param, raster, dat) {
         x = x,
         y = y,
         color = shade,
-        alpha = exp(-(time -1)/20)
+        alpha = param$alpha_heart(time)
       ),
       inherit.aes = FALSE,
       show.legend = FALSE,
@@ -179,8 +253,8 @@ make_ggplot <- function(param, raster, dat) {
     ggplot2::theme_void() +
     ggplot2::theme(
       panel.background = ggplot2::element_rect(
-        fill = param$fill_base,
-        color = param$fill_base
+        fill = param$palette_background,
+        color = param$palette_background
       )
     )
 }

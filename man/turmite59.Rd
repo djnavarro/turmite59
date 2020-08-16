@@ -4,12 +4,87 @@
 \alias{turmite59}
 \title{Makes a heartbleed image}
 \usage{
-turmite59(shade, file = NULL)
+turmite59(
+  shade,
+  file = NULL,
+  image_x = NULL,
+  image_y = NULL,
+  image_dpi = NULL,
+  palette_n = NULL,
+  palette_heart = NULL,
+  palette_turmite = NULL,
+  alpha_turmite = NULL,
+  alpha_heart = NULL,
+  heart_shift_x = NULL,
+  heart_shift_y = NULL,
+  heart_grain = NULL,
+  heart_size = NULL,
+  heart_jitter = NULL,
+  slice_scale = NULL,
+  slice_n = NULL,
+  unfold_iter = NULL,
+  unfold_scale = NULL,
+  unfold_drift = NULL,
+  unfold_fractal = NULL,
+  unfold_octaves = NULL,
+  turmite_grid_x = NULL,
+  turmite_grid_y = NULL,
+  turmite_steps = NULL,
+  turmite_stepsize = NULL
+)
 }
 \arguments{
-\item{shade}{hex code}
+\item{shade}{Hex code specifying a base colour}
 
-\item{file}{filename}
+\item{file}{File to save the image}
+
+\item{image_x}{Image width in inches}
+
+\item{image_y}{Image height in inches}
+
+\item{image_dpi}{Image resolution in dpi}
+
+\item{palette_n}{Number of distinct colours}
+
+\item{palette_heart}{Palette for the heart}
+
+\item{palette_turmite}{Palette for the turmite}
+
+\item{alpha_turmite}{Transparency for the turmite}
+
+\item{alpha_heart}{Transparency function for the heart}
+
+\item{heart_shift_x}{Horizontal offset for the heart}
+
+\item{heart_shift_y}{Vertical offset for the heart}
+
+\item{heart_grain}{Number of distinct points along the heart}
+
+\item{heart_size}{Size of the heart}
+
+\item{heart_jitter}{Noise in the heart}
+
+\item{slice_scale}{Scale of the slice step}
+
+\item{slice_n}{Number of slices in the slice step}
+
+\item{unfold_iter}{Number of iterations for the breeze step}
+
+\item{unfold_scale}{Scale of the breeze step}
+
+\item{unfold_drift}{Drift rate for the breeze step}
+
+\item{unfold_fractal}{Fractal to use for the breeze step}
+
+\item{unfold_octaves}{Number of octacves}
+
+\item{turmite_grid_x}{Horizontal size of the turmite grid in pixels}
+
+\item{turmite_grid_y}{Vertical size of the turmite grid in pixels}
+
+\item{turmite_steps}{Number of steps to run the turmite}
+
+\item{turmite_stepsize}{Distance the turmite walks on each step}
 }
 \description{
 Makes a heartbleed image
