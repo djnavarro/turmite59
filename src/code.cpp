@@ -90,12 +90,23 @@ cpp11::writable::integers_matrix run_turmite(int width, int height, int iter, in
   return grid;
 }
 
+struct RNGScope {
+  RNGScope() {
+    GetRNGstate();
+  }
+
+  ~RNGScope(){
+    PutRNGstate();
+  }
+};
+
 }
 
 
 // turmite function to be called from R
 [[cpp11::register]]
 cpp11::writable::integers_matrix turmite(int width, int height, int iter, int step_size) {
+  trmt::RNGScope rng_scope;
   return trmt::run_turmite(width, height, iter, step_size);
 }
 
