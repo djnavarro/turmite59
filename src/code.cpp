@@ -36,6 +36,14 @@ cpp11::writable::integers_matrix run_turmite(int width, int height, int iter, in
   cpp11::writable::integers_matrix grid(width, height); // initially zero
   cpp11::writable::integers_matrix cols(width, height); // initially zero
 
+  // force zeros
+  for(int r = 0; r < height; r++) {
+    for(int c = 0; c < width; c++) {
+      grid(r, c) = 0;
+      cols(r, c) = 0;
+    }
+  }
+
   for(int t = 0; t < iter; t++) {
 
     color = cols(pos[0], pos[1]);
