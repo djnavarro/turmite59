@@ -39,8 +39,8 @@ cpp11::writable::integers_matrix run_turmite(int width, int height, int iter, in
   // force zeros
   for(int r = 0; r < height; r++) {
     for(int c = 0; c < width; c++) {
-      grid(r, c) = 0;
-      cols(r, c) = 0;
+      grid(c, r) = 0;
+      cols(c, r) = 0;
     }
   }
 
