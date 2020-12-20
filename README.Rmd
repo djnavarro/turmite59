@@ -29,6 +29,6 @@ devtools::install_github("djnavarro/turmite59")
 An example
 
 ```{r example, eval=FALSE}
-turmite59::turmite59("ffffff")
+turmite59::turmite59("0xffffff")
 ```
 
